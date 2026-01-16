@@ -2,9 +2,25 @@
 import '../ui/components/reusable_card.dart';
 import '../ui/components/market_price_row.dart';
 import '../ui/theme.dart';
+import '../services/market_service.dart';
 
-class MarketScreen extends StatelessWidget {
+class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key});
+
+  @override
+  State<MarketScreen> createState() => _MarketScreenState();
+}
+
+class _MarketScreenState extends State<MarketScreen> {
+  final MarketService _marketService = MarketService();
+  String _selectedFilter = 'All';
+
+  @override
+  void initState() {
+    super.initState();
+    // Seed data if needed
+    _marketService.seedDataIfEmpty();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,39 +103,65 @@ class MarketScreen extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _FilterChip(label: 'All', isSelected: true),
+                        _filterChip('All'),
                         const SizedBox(width: 8),
-                        _FilterChip(label: 'Grains', isSelected: false),
+                        _filterChip('Grains'),
                          const SizedBox(width: 8),
-                        _FilterChip(label: 'Vegetables', isSelected: false),
+                        _filterChip('Vegetables'),
                          const SizedBox(width: 8),
-                        _FilterChip(label: 'Fruits', isSelected: false),
+                        _filterChip('Fruits'),
+                        const SizedBox(width: 8),
+                        _filterChip('Cash Crops'),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
                   
-                  // List
-                  const ReusableCard(
-                      child: MarketPriceRow(
-                          crop: 'Maize',
-                          price: '210',
-                          location: 'Kano Market',
-                          up: true)),
-                  const SizedBox(height: 12),
-                  const ReusableCard(
-                      child: MarketPriceRow(
-                          crop: 'Tomato',
-                          price: '330',
-                          location: 'Lagos Market',
-                          up: false)),
-                  const SizedBox(height: 12),
-                  const ReusableCard(
-                      child: MarketPriceRow(
-                          crop: 'Cassava',
-                          price: '180',
-                          location: 'Abuja Market',
-                          up: true)),
+                  // Live List
+                  StreamBuilder<List<MarketItem>>(
+                    stream: _marketService.getPrices(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text("Error loading prices: ${snapshot.error}"));
+                      }
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                         return const Center(child: Text("No prices available yet."));
+                      }
+                      
+                      final allItems = snapshot.data!;
+                      final filteredItems = _selectedFilter == 'All' 
+                          ? allItems 
+                          : allItems.where((i) => i.category == _selectedFilter).toList();
+                          
+                      if (filteredItems.isEmpty) {
+                         return SizedBox(
+                           height: 100,
+                           child: Center(
+                             child: Text("No items found for $_selectedFilter", style: TextStyle(color: Colors.grey))
+                           )
+                          );
+                      }
+
+                      return Column(
+                        children: filteredItems.map((item) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: ReusableCard(
+                              child: MarketPriceRow(
+                                crop: item.crop,
+                                price: '${item.price.toStringAsFixed(0)} ${item.currency}',
+                                location: item.location,
+                                up: item.isUp,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -128,28 +170,24 @@ class MarketScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-
-  const _FilterChip({required this.label, required this.isSelected});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? AppTheme.primaryGreen : Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isSelected ? AppTheme.primaryGreen : Colors.grey.shade300),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
-          fontWeight: FontWeight.w600,
+  Widget _filterChip(String label) {
+    final isSelected = _selectedFilter == label;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedFilter = label),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primaryGreen : Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? AppTheme.primaryGreen : Colors.grey.shade300),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );

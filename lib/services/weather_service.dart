@@ -106,7 +106,8 @@ class WeatherService {
       windSpeed: (current['windspeed'] as num?)?.toDouble(),
       weatherCodeLabel: _codeToLabel(current['weathercode'] as int?),
       daily: forecasts,
-      updatedAt: DateTime.tryParse(current['time'] as String? ?? '') ?? DateTime.now(),
+      updatedAt:
+          DateTime.tryParse(current['time'] as String? ?? '') ?? DateTime.now(),
     );
   }
 
