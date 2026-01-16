@@ -70,7 +70,7 @@ class WeatherService {
 
     final uri = Uri.parse(
         'https://api.open-meteo.com/v1/forecast?latitude=$latitude&longitude=$longitude&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_mean&timezone=auto');
-    
+
     final res = await http.get(uri);
     if (res.statusCode != 200) {
       throw Exception('Failed to load weather');
@@ -109,10 +109,10 @@ class WeatherService {
 
   Future<List<City>> searchCities(String query) async {
     if (query.length < 2) return [];
-    
+
     final uri = Uri.parse(
         'https://geocoding-api.open-meteo.com/v1/search?name=$query&count=10&language=en&format=json');
-    
+
     final res = await http.get(uri);
     if (res.statusCode != 200) {
       throw Exception('Failed to search cities');
@@ -120,9 +120,9 @@ class WeatherService {
 
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     final results = data['results'] as List?;
-    
+
     if (results == null) return [];
-    
+
     return results.map((e) => City.fromJson(e)).toList();
   }
 
@@ -142,28 +142,32 @@ class WeatherService {
         return null;
       }
     }
-    
+
     if (permission == LocationPermission.deniedForever) {
       return null;
-    } 
+    }
 
     return await Geolocator.getCurrentPosition();
   }
-  
+
   Future<String?> getCityNameFromCoordinates(double lat, double long) async {
     try {
-      List<geo.Placemark> placemarks = await geo.placemarkFromCoordinates(lat, long);
+      List<geo.Placemark> placemarks =
+          await geo.placemarkFromCoordinates(lat, long);
       if (placemarks.isNotEmpty) {
-        return placemarks.first.locality ?? placemarks.first.subAdministrativeArea ?? placemarks.first.administrativeArea;
+        return placemarks.first.locality ??
+            placemarks.first.subAdministrativeArea ??
+            placemarks.first.administrativeArea;
       }
     } catch (e) {
       // debugPrint('Failed to get placemark: $e');
     }
     return null;
   }
-  
+
   /// Helper to guess coordinates from a city string using the geocoding search API
-  Future<Map<String, double>?> getCoordinatesFromCityName(String cityName) async {
+  Future<Map<String, double>?> getCoordinatesFromCityName(
+      String cityName) async {
     try {
       final cities = await searchCities(cityName);
       if (cities.isNotEmpty) {

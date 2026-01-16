@@ -43,14 +43,14 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       // Reload user to get updated emailVerified status
       await user.reload();
       final updatedUser = FirebaseAuth.instance.currentUser;
-      
+
       if (updatedUser != null && updatedUser.emailVerified) {
-         widget.onVerified();
+        widget.onVerified();
       } else {
-         setState(() {
-           _message = "Email not verified yet. Please check your inbox.";
-           _isChecking = false;
-         });
+        setState(() {
+          _message = "Email not verified yet. Please check your inbox.";
+          _isChecking = false;
+        });
       }
     }
   }
@@ -64,7 +64,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.mark_email_unread, size: 80, color: AppTheme.primaryGreen),
+              const Icon(Icons.mark_email_unread,
+                  size: 80, color: AppTheme.primaryGreen),
               const SizedBox(height: 24),
               Text(
                 'Verify your email',
@@ -86,23 +87,24 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 ),
               const SizedBox(height: 32),
               PrimaryButton(
-                label: _isChecking ? 'Checking...' : 'I have verified', 
+                label: _isChecking ? 'Checking...' : 'I have verified',
                 icon: Icons.check_circle_outline,
                 onPressed: _isChecking ? null : _checkVerification,
               ),
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () async {
-                   setState(() => _isSending = true);
-                   await _sendVerificationEmail();
-                   setState(() => _isSending = false);
+                  setState(() => _isSending = true);
+                  await _sendVerificationEmail();
+                  setState(() => _isSending = false);
                 },
                 child: Text(_isSending ? 'Sending...' : 'Resend Email'),
               ),
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () => FirebaseAuth.instance.signOut(),
-                child: const Text('Sign Out / Use different email', style: TextStyle(color: Colors.red)),
+                child: const Text('Sign Out / Use different email',
+                    style: TextStyle(color: Colors.red)),
               ),
             ],
           ),

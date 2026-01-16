@@ -45,7 +45,10 @@ class UserService {
   final String _collection = 'users';
 
   Future<void> saveUser(UserProfile profile) async {
-    await _db.collection(_collection).doc(profile.uid).set(profile.toMap(), SetOptions(merge: true));
+    await _db
+        .collection(_collection)
+        .doc(profile.uid)
+        .set(profile.toMap(), SetOptions(merge: true));
   }
 
   Future<UserProfile?> getUser(String uid) async {

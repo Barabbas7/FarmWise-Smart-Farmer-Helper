@@ -20,7 +20,8 @@ void main() async {
 class FarmWiseApp extends StatefulWidget {
   const FarmWiseApp({super.key});
 
-  static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
+  static final ValueNotifier<ThemeMode> themeNotifier =
+      ValueNotifier(ThemeMode.light);
 
   @override
   _FarmWiseAppState createState() => _FarmWiseAppState();
@@ -32,7 +33,7 @@ class _FarmWiseAppState extends State<FarmWiseApp> {
   String? _initError;
   User? _user;
   StreamSubscription<User?>? _authSub;
-  
+
   // Track if we manually passed verification (for the session)
   bool _manuallyVerified = false;
 
@@ -87,7 +88,8 @@ class _FarmWiseAppState extends State<FarmWiseApp> {
   Widget build(BuildContext context) {
     // Determine if we should show the Verify Email Screen
     // Condition: User is logged in AND (Email is not verified AND Verification not manually skipped/confirmed this session)
-    bool showVerification = _user != null && !_user!.emailVerified && !_manuallyVerified;
+    bool showVerification =
+        _user != null && !_user!.emailVerified && !_manuallyVerified;
 
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: FarmWiseApp.themeNotifier,
@@ -102,16 +104,15 @@ class _FarmWiseAppState extends State<FarmWiseApp> {
               ? const SplashScreen()
               : _initError != null
                   ? Scaffold(
-                      body:
-                          Center(child: Text('Firebase init error:\n$_initError')))
+                      body: Center(
+                          child: Text('Firebase init error:\n$_initError')))
                   : (_user == null)
-                      ? LoginScreen(
-                          onLoggedIn: () {})
+                      ? LoginScreen(onLoggedIn: () {})
                       : showVerification
                           ? VerifyEmailScreen(onVerified: () {
-                               setState(() {
-                                 _manuallyVerified = true;
-                               });
+                              setState(() {
+                                _manuallyVerified = true;
+                              });
                             })
                           : Scaffold(
                               body: IndexedStack(
@@ -130,7 +131,8 @@ class _FarmWiseAppState extends State<FarmWiseApp> {
                                       icon: Icon(Icons.calendar_today),
                                       label: 'Planner'),
                                   BottomNavigationBarItem(
-                                      icon: Icon(Icons.person), label: 'Profile'),
+                                      icon: Icon(Icons.person),
+                                      label: 'Profile'),
                                 ],
                               ),
                             ),

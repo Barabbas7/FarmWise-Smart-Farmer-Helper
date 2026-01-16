@@ -40,40 +40,41 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _signInWithGoogle() async {
-     setState(() {
-       _isSubmitting = true;
-       _error = null;
-     });
-     
-     try {
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
+
+    try {
       final googleUser = await GoogleSignIn(scopes: ['email']).signIn();
       if (googleUser == null) {
         // User cancelled
-        if(mounted) setState(() => _isSubmitting = false);
+        if (mounted) setState(() => _isSubmitting = false);
         return;
       }
-      
+
       final googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      
-      final result = await FirebaseAuth.instance.signInWithCredential(credential);
-      
+
+      final result =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
       if (result.user != null) {
         // Try to check/create profile, but don't block login on failure
         try {
           final existing = await _userService.getUser(result.user!.uid);
           if (existing == null) {
-             await _userService.saveUser(UserProfile(
-               uid: result.user!.uid,
-               email: result.user!.email ?? '',
-               fullName: result.user!.displayName ?? 'Farmer',
-               farmLocation: 'Unknown',
-               farmArea: 'Unknown',
-               photoUrl: result.user!.photoURL,
-             ));
+            await _userService.saveUser(UserProfile(
+              uid: result.user!.uid,
+              email: result.user!.email ?? '',
+              fullName: result.user!.displayName ?? 'Farmer',
+              farmLocation: 'Unknown',
+              farmArea: 'Unknown',
+              photoUrl: result.user!.photoURL,
+            ));
           }
         } catch (e) {
           debugPrint("Profile creation failed (Google): $e");
@@ -92,16 +93,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _submit() async {
     setState(() => _error = null);
-    
+
     // Only validate fields relevant to the current mode
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
-    
+
     setState(() => _isSubmitting = true);
-    
+
     try {
       final auth = FirebaseAuth.instance;
-      
+
       if (_isLogin) {
         // --- LOGGING IN ---
         await auth.signInWithEmailAndPassword(
@@ -115,40 +116,47 @@ class _LoginScreenState extends State<LoginScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
-        
+
         if (userCredential.user != null) {
-           await userCredential.user!.updateDisplayName(_nameController.text.trim());
-           
-           try {
-             final profile = UserProfile(
-               uid: userCredential.user!.uid,
-               email: _emailController.text.trim(),
-               fullName: _nameController.text.trim(),
-               farmLocation: _locationController.text.trim(),
-               farmArea: _areaController.text.trim(),
-               photoUrl: userCredential.user!.photoURL,
-             );
-             await _userService.saveUser(profile);
-           } catch (e) {
-             debugPrint("Failed to save extended profile: $e");
-             // User created in Auth, so we can proceed, but maybe warn user?
-             // optimizing for UX: let them in.
-           }
+          await userCredential.user!
+              .updateDisplayName(_nameController.text.trim());
+
+          try {
+            final profile = UserProfile(
+              uid: userCredential.user!.uid,
+              email: _emailController.text.trim(),
+              fullName: _nameController.text.trim(),
+              farmLocation: _locationController.text.trim(),
+              farmArea: _areaController.text.trim(),
+              photoUrl: userCredential.user!.photoURL,
+            );
+            await _userService.saveUser(profile);
+          } catch (e) {
+            debugPrint("Failed to save extended profile: $e");
+            // User created in Auth, so we can proceed, but maybe warn user?
+            // optimizing for UX: let them in.
+          }
         }
         widget.onLoggedIn?.call();
       }
     } on FirebaseAuthException catch (e) {
       String msg = 'Authentication failed';
-      if (e.code == 'user-not-found') msg = 'No user found with this email.';
-      else if (e.code == 'wrong-password') msg = 'Incorrect password.';
-      else if (e.code == 'email-already-in-use') msg = 'Email already registered.';
-      else if (e.code == 'weak-password') msg = 'Password is too weak.';
-      else msg = e.message ?? msg;
-      
+      if (e.code == 'user-not-found')
+        msg = 'No user found with this email.';
+      else if (e.code == 'wrong-password')
+        msg = 'Incorrect password.';
+      else if (e.code == 'email-already-in-use')
+        msg = 'Email already registered.';
+      else if (e.code == 'weak-password')
+        msg = 'Password is too weak.';
+      else
+        msg = e.message ?? msg;
+
       setState(() => _error = msg);
     } catch (e) {
       debugPrint("Login Error: $e");
-      setState(() => _error = 'An unexpected error occurred. Restart app if this persists.');
+      setState(() => _error =
+          'An unexpected error occurred. Restart app if this persists.');
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -242,11 +250,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                                  const Icon(Icons.error_outline,
+                                      color: Colors.red, size: 20),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(_error!,
-                                        style: textTheme.bodySmall?.copyWith(color: Colors.red.shade900)),
+                                        style: textTheme.bodySmall?.copyWith(
+                                            color: Colors.red.shade900)),
                                   ),
                                 ],
                               ),
@@ -256,45 +266,58 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (!_isLogin) ...[
                             Align(
                               alignment: Alignment.centerLeft,
-                              child: Text('Full Name', style: textTheme.bodyMedium),
+                              child: Text('Full Name',
+                                  style: textTheme.bodyMedium),
                             ),
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _nameController,
                               textCapitalization: TextCapitalization.words,
-                              decoration: const InputDecoration(hintText: 'John Doe'),
-                              validator: (val) => !_isLogin && (val == null || val.isEmpty) ? 'Enter your name' : null,
+                              decoration:
+                                  const InputDecoration(hintText: 'John Doe'),
+                              validator: (val) =>
+                                  !_isLogin && (val == null || val.isEmpty)
+                                      ? 'Enter your name'
+                                      : null,
                             ),
                             const SizedBox(height: 16),
-                            
                             Align(
                               alignment: Alignment.centerLeft,
-                              child: Text('Farm Location', style: textTheme.bodyMedium),
+                              child: Text('Farm Location',
+                                  style: textTheme.bodyMedium),
                             ),
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _locationController,
                               textCapitalization: TextCapitalization.words,
-                              decoration: const InputDecoration(hintText: 'e.g. Adama, Ethiopia'),
-                              validator: (val) => !_isLogin && (val == null || val.isEmpty) ? 'Enter farm location' : null,
+                              decoration: const InputDecoration(
+                                  hintText: 'e.g. Adama, Ethiopia'),
+                              validator: (val) =>
+                                  !_isLogin && (val == null || val.isEmpty)
+                                      ? 'Enter farm location'
+                                      : null,
                             ),
                             const SizedBox(height: 16),
-                            
                             Align(
                               alignment: Alignment.centerLeft,
-                              child: Text('Farm Area', style: textTheme.bodyMedium),
+                              child: Text('Farm Area',
+                                  style: textTheme.bodyMedium),
                             ),
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _areaController,
-                              decoration: const InputDecoration(hintText: 'e.g. 5 hectares'),
-                              validator: (val) => !_isLogin && (val == null || val.isEmpty) ? 'Enter farm area' : null,
+                              decoration: const InputDecoration(
+                                  hintText: 'e.g. 5 hectares'),
+                              validator: (val) =>
+                                  !_isLogin && (val == null || val.isEmpty)
+                                      ? 'Enter farm area'
+                                      : null,
                             ),
                             const SizedBox(height: 16),
                             const Divider(),
                             const SizedBox(height: 16),
                           ],
-                          
+
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text('Email', style: textTheme.bodyMedium),
@@ -323,8 +346,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextFormField(
                             controller: _passwordController,
                             obscureText: true,
-                            decoration:
-                                const InputDecoration(hintText: ''),
+                            decoration: const InputDecoration(hintText: ''),
                             validator: (value) {
                               if (value == null || value.isEmpty)
                                 return 'Enter your password';
@@ -347,25 +369,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 12),
                           if (_isLogin)
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              icon: const Icon(Icons.login),
-                              label: Text(_isSubmitting
-                                  ? 'Please wait...'
-                                  : 'Continue with Google'),
-                              onPressed:
-                                  _isSubmitting ? null : _signInWithGoogle,
-                              style: OutlinedButton.styleFrom(
-                                minimumSize: const Size.fromHeight(48),
-                                foregroundColor: AppTheme.primaryGreen,
-                                side: const BorderSide(
-                                    color: AppTheme.primaryGreen),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                icon: const Icon(Icons.login),
+                                label: Text(_isSubmitting
+                                    ? 'Please wait...'
+                                    : 'Continue with Google'),
+                                onPressed:
+                                    _isSubmitting ? null : _signInWithGoogle,
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size.fromHeight(48),
+                                  foregroundColor: AppTheme.primaryGreen,
+                                  side: const BorderSide(
+                                      color: AppTheme.primaryGreen),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
                               ),
                             ),
-                          ),
                           const SizedBox(height: 12),
                           SecondaryButton(
                             label: _isLogin

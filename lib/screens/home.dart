@@ -18,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<WeatherData> _weatherFuture;
   final WeatherService _weatherService = WeatherService();
   final UserService _userService = UserService();
-  
+
   String _locationLabel = 'Addis Ababa';
   double? _customLat;
   double? _customLong;
@@ -36,27 +36,30 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _initLocationStrategy() async {
     final user = FirebaseAuth.instance.currentUser;
     bool firebaseLocationFound = false;
-    
+
     if (user != null) {
       try {
         final profile = await _userService.getUser(user.uid);
-        if (profile != null && profile.farmLocation.isNotEmpty && profile.farmLocation != 'Unknown') {
+        if (profile != null &&
+            profile.farmLocation.isNotEmpty &&
+            profile.farmLocation != 'Unknown') {
           print("HomeScreen: Finding location for ${profile.farmLocation}");
-          final coords = await _weatherService.getCoordinatesFromCityName(profile.farmLocation);
-          
+          final coords = await _weatherService
+              .getCoordinatesFromCityName(profile.farmLocation);
+
           if (coords != null && mounted) {
-             setState(() {
-               _locationLabel = profile.farmLocation;
-               _customLat = coords['latitude'];
-               _customLong = coords['longitude'];
-               _isManualLocation = true;
-               _isProfileLocationLoaded = true;
-               _weatherFuture = _weatherService.fetchWeather(
-                  lat: _customLat,
-                  long: _customLong,
-               );
-             });
-             firebaseLocationFound = true;
+            setState(() {
+              _locationLabel = profile.farmLocation;
+              _customLat = coords['latitude'];
+              _customLong = coords['longitude'];
+              _isManualLocation = true;
+              _isProfileLocationLoaded = true;
+              _weatherFuture = _weatherService.fetchWeather(
+                lat: _customLat,
+                long: _customLong,
+              );
+            });
+            firebaseLocationFound = true;
           }
         }
       } catch (e) {
@@ -68,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _loadCurrentLocation();
     }
   }
-  
+
   Future<void> _loadCurrentLocation() async {
     try {
       print("HomeScreen: Loading current GPS location");
@@ -76,9 +79,10 @@ class _HomeScreenState extends State<HomeScreen> {
       if (_isManualLocation || _isProfileLocationLoaded) return;
 
       if (pos != null && mounted) {
-        String? cityName = await _weatherService.getCityNameFromCoordinates(pos.latitude, pos.longitude);
+        String? cityName = await _weatherService.getCityNameFromCoordinates(
+            pos.latitude, pos.longitude);
         if (_isManualLocation) return;
-        
+
         setState(() {
           _locationLabel = cityName ?? "My Location";
           _customLat = pos.latitude;
@@ -95,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint("Error getting location: $e");
     }
   }
-  
+
   void _selectCity(City city) {
     setState(() {
       _isManualLocation = true;
@@ -121,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     // Debug print to check if build is running
     print("HomeScreen: build running");
-    
+
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -133,14 +137,16 @@ class _HomeScreenState extends State<HomeScreen> {
             // 1. Header Section (Simplified container)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.only(left: 20, right: 20, top: 50, bottom: 30),
+              padding: const EdgeInsets.only(
+                  left: 20, right: 20, top: 50, bottom: 30),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [AppTheme.primaryGreen, AppTheme.lightGreen],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(32)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +161,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.white.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.agriculture, color: Colors.white),
+                        child:
+                            const Icon(Icons.agriculture, color: Colors.white),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -163,9 +170,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('FarmWise',
-                                style: textTheme.titleMedium?.copyWith(color: Colors.white)),
+                                style: textTheme.titleMedium
+                                    ?.copyWith(color: Colors.white)),
                             Text('Plan. Grow. Thrive.',
-                                style: textTheme.bodySmall?.copyWith(color: Colors.white70)),
+                                style: textTheme.bodySmall
+                                    ?.copyWith(color: Colors.white70)),
                           ],
                         ),
                       ),
@@ -174,7 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: _showCitySearchDialog,
                         borderRadius: BorderRadius.circular(16),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(16),
@@ -182,16 +192,20 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.location_on, color: Colors.white, size: 16),
+                              const Icon(Icons.location_on,
+                                  color: Colors.white, size: 16),
                               const SizedBox(width: 6),
                               Flexible(
                                 child: Text(
-                                  _locationLabel, 
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  _locationLabel,
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const Icon(Icons.arrow_drop_down, color: Colors.white),
+                              const Icon(Icons.arrow_drop_down,
+                                  color: Colors.white),
                             ],
                           ),
                         ),
@@ -200,17 +214,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 30),
                   Text('Welcome to FarmWise',
-                      style: textTheme.headlineSmall?.copyWith(color: Colors.white)),
+                      style: textTheme.headlineSmall
+                          ?.copyWith(color: Colors.white)),
                   const SizedBox(height: 8),
                   Text(
                     'Smart agriculture planning with live weather and market insights.',
-                    style: textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withOpacity(0.9)),
+                    style: textTheme.bodyMedium
+                        ?.copyWith(color: Colors.white.withOpacity(0.9)),
                   ),
                 ],
               ),
             ),
-            
+
             // 2. Main Content (Weather and Actions)
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -222,7 +237,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: FutureBuilder<WeatherData>(
                       future: _weatherFuture,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return _WeatherCardSkeleton(textTheme: textTheme);
                         }
                         if (snapshot.hasError) {
@@ -231,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         if (!snapshot.hasData) {
                           return _WeatherCardFallback(textTheme: textTheme);
                         }
-                        
+
                         final weather = snapshot.data!;
                         final df = DateFormat('EEE');
                         final daily = weather.daily;
@@ -252,9 +268,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Quick Actions
                   ReusableCard(
                     child: Column(
@@ -266,9 +282,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: const [
-                            _QuickAction(label: 'Crop Advice', icon: Icons.agriculture),
-                            _QuickAction(label: 'My Farm', icon: Icons.event_note),
-                            _QuickAction(label: 'Market Prices', icon: Icons.store),
+                            _QuickAction(
+                                label: 'Crop Advice', icon: Icons.agriculture),
+                            _QuickAction(
+                                label: 'My Farm', icon: Icons.event_note),
+                            _QuickAction(
+                                label: 'Market Prices', icon: Icons.store),
                           ],
                         ),
                       ],
@@ -327,7 +346,8 @@ class _CitySearchDialogState extends State<_CitySearchDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Change Location', style: Theme.of(context).textTheme.titleLarge),
+            Text('Change Location',
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             TextField(
               controller: _searchController,
@@ -336,10 +356,11 @@ class _CitySearchDialogState extends State<_CitySearchDialog> {
               decoration: InputDecoration(
                 hintText: 'Enter city name (e.g. Adama)',
                 prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 suffixIcon: IconButton(
-                   icon: const Icon(Icons.arrow_forward),
-                   onPressed: _search,
+                  icon: const Icon(Icons.arrow_forward),
+                  onPressed: _search,
                 ),
               ),
               onSubmitted: (_) => _search(),
@@ -347,33 +368,38 @@ class _CitySearchDialogState extends State<_CitySearchDialog> {
             const SizedBox(height: 12),
             SizedBox(
               height: 200,
-              child: _isLoading 
-                ? const Center(child: CircularProgressIndicator())
-                : _results.isEmpty 
-                    ? Center(
-                        child: Text(_hasSearched 
-                          ? 'No cities found. Try another name.' 
-                          : 'Enter a city name to search'),
-                      )
-                    : ListView.separated(
-                        itemCount: _results.length,
-                        separatorBuilder: (context, index) => const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          final city = _results[index];
-                          final parts = [city.admin1, city.country]
-                             .where((s) => s != null && s.isNotEmpty)
-                             .cast<String>()
-                             .toList();
-                          final subtitle = parts.join(', ');
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _results.isEmpty
+                      ? Center(
+                          child: Text(_hasSearched
+                              ? 'No cities found. Try another name.'
+                              : 'Enter a city name to search'),
+                        )
+                      : ListView.separated(
+                          itemCount: _results.length,
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final city = _results[index];
+                            final parts = [city.admin1, city.country]
+                                .where((s) => s != null && s.isNotEmpty)
+                                .cast<String>()
+                                .toList();
+                            final subtitle = parts.join(', ');
 
-                          return ListTile(
-                            leading: const Icon(Icons.location_city, color: AppTheme.primaryGreen),
-                            title: Text(city.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                            subtitle: subtitle.isNotEmpty ? Text(subtitle) : null,
-                            onTap: () => widget.onCitySelected(city),
-                          );
-                        },
-                      ),
+                            return ListTile(
+                              leading: const Icon(Icons.location_city,
+                                  color: AppTheme.primaryGreen),
+                              title: Text(city.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600)),
+                              subtitle:
+                                  subtitle.isNotEmpty ? Text(subtitle) : null,
+                              onTap: () => widget.onCitySelected(city),
+                            );
+                          },
+                        ),
             ),
           ],
         ),
@@ -489,7 +515,8 @@ class _WeatherCardContent extends StatelessWidget {
                     style: textTheme.headlineMedium),
                 Text(
                   condition,
-                  style: textTheme.bodyMedium?.copyWith(color: AppTheme.darkGray),
+                  style:
+                      textTheme.bodyMedium?.copyWith(color: AppTheme.darkGray),
                 ),
               ],
             ),
@@ -504,20 +531,36 @@ class _WeatherCardContent extends StatelessWidget {
         const SizedBox(height: 16),
         Text('Upcoming', style: textTheme.titleMedium),
         const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: upcoming.isNotEmpty
-              ? upcoming
-                  .map((f) => WeatherChip(
-                        label: f.label,
-                        icon: f.isRainy ? Icons.umbrella : Icons.wb_sunny,
-                      ))
-                  .toList()
-              : const [
-                  WeatherChip(label: 'Tue 26\u00B0/22\u00B0', icon: Icons.wb_sunny),
-                  WeatherChip(label: 'Wed 25\u00B0/21\u00B0', icon: Icons.cloud),
-                  WeatherChip(label: 'Thu 27\u00B0/23\u00B0', icon: Icons.wb_cloudy),
-                ],
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: upcoming.isNotEmpty
+                ? upcoming
+                    .map((f) => Padding(
+                          padding: const EdgeInsets.only(right: 12.0),
+                          child: WeatherChip(
+                            label: f.label,
+                            icon: f.isRainy ? Icons.umbrella : Icons.wb_sunny,
+                          ),
+                        ))
+                    .toList()
+                : const [
+                    Padding(
+                        padding: EdgeInsets.only(right: 12),
+                        child: WeatherChip(
+                            label: 'Tue 26\u00B0/22\u00B0',
+                            icon: Icons.wb_sunny)),
+                    Padding(
+                        padding: EdgeInsets.only(right: 12),
+                        child: WeatherChip(
+                            label: 'Wed 25\u00B0/21\u00B0', icon: Icons.cloud)),
+                    Padding(
+                        padding: EdgeInsets.only(right: 12),
+                        child: WeatherChip(
+                            label: 'Thu 27\u00B0/23\u00B0',
+                            icon: Icons.wb_cloudy)),
+                  ],
+          ),
         ),
       ],
     );
@@ -544,7 +587,8 @@ class _QuickAction extends StatelessWidget {
           child: Icon(icon, color: AppTheme.primaryGreen, size: 28),
         ),
         const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+        Text(label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
       ],
     );
   }
