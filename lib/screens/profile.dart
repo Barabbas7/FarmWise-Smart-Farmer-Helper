@@ -11,6 +11,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -37,16 +38,16 @@ class ProfileScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 3),
-                      image: const DecorationImage(
-                        image: NetworkImage('https://i.pravatar.cc/300'), // Placeholder
+                      image: DecorationImage(
+                        image: NetworkImage(user?.photoURL ?? 'https://ui-avatars.com/api/?name=${user?.displayName ?? 'User'}'),
                         fit: BoxFit.cover,
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('John Doe',
+                  Text(user?.displayName ?? 'FarmWise User',
                       style: textTheme.headlineSmall?.copyWith(color: Colors.white)),
-                  Text('Smallholder Farmer',
+                  Text(user?.email ?? 'Smallholder Farmer',
                       style: textTheme.bodyMedium?.copyWith(
                           color: Colors.white.withOpacity(0.9))),
                 ],
