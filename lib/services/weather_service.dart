@@ -34,12 +34,14 @@ class WeatherData {
   final double? windSpeed;
   final String? weatherCodeLabel;
   final List<DailyForecast> daily;
+  final DateTime updatedAt;
 
   WeatherData({
     required this.temperatureC,
     this.windSpeed,
     this.weatherCodeLabel,
     required this.daily,
+    required this.updatedAt,
   });
 }
 
@@ -104,6 +106,7 @@ class WeatherService {
       windSpeed: (current['windspeed'] as num?)?.toDouble(),
       weatherCodeLabel: _codeToLabel(current['weathercode'] as int?),
       daily: forecasts,
+      updatedAt: DateTime.tryParse(current['time'] as String? ?? '') ?? DateTime.now(),
     );
   }
 

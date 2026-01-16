@@ -257,6 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           temperature: weather.temperatureC,
                           condition: weather.weatherCodeLabel ?? 'Weather',
                           windSpeed: weather.windSpeed,
+                          updatedAt: weather.updatedAt,
                           upcoming: daily.take(5).map((d) {
                             return _ForecastItem(
                               label:
@@ -270,6 +271,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
                   const SizedBox(height: 16),
+
+                  // Weather Insights
+                  FutureBuilder<WeatherData>(
+                    future: _weatherFuture,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) return const SizedBox.shrink();
+                      return Column(
+                        children: [
+                          ReusableCard(
+                            padding: const EdgeInsets.all(16),
+                            child:
+                                _WeatherInsightsCard(weather: snapshot.data!),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      );
+                    },
+                  ),
 
                   // Quick Actions
                   ReusableCard(
@@ -488,6 +507,7 @@ class _WeatherCardContent extends StatelessWidget {
   final String condition;
   final double? windSpeed;
   final List<_ForecastItem> upcoming;
+  final DateTime updatedAt;
 
   const _WeatherCardContent({
     required this.textTheme,
@@ -495,6 +515,7 @@ class _WeatherCardContent extends StatelessWidget {
     required this.condition,
     required this.windSpeed,
     required this.upcoming,
+    required this.updatedAt,
   });
 
   @override
@@ -502,7 +523,16 @@ class _WeatherCardContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Today's Weather", style: textTheme.titleMedium),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Today's Weather", style: textTheme.titleMedium),
+            Text(
+              'Updated ${DateFormat('HH:mm').format(updatedAt)}',
+              style: textTheme.bodySmall?.copyWith(color: AppTheme.darkGray),
+            ),
+          ],
+        ),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -590,6 +620,133 @@ class _QuickAction extends StatelessWidget {
         Text(label,
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
       ],
+    );
+  }
+}
+
+class _WeatherInsightsCard extends StatelessWidget {
+  final WeatherData weather;
+
+  const _WeatherInsightsCard({required this.weather});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final label = weather.weatherCodeLabel ?? 'Clear';
+    final temp = weather.temperatureC;
+    final isRainy = label.contains('Rain') ||
+        label.contains('Drizzle') ||
+        label.contains('Showers') ||
+        label.contains('Thunderstorm') ||
+        (weather.daily.isNotEmpty &&
+            (weather.daily[0].precipitationProb ?? 0) > 50);
+    final isHot = temp > 28;
+    final isCold = temp < 10;
+    final isWindy = (weather.windSpeed ?? 0) > 20;
+
+    String title = "Farm Insight";
+    List<String> insights = [
+      "Conditions are mild. Great day for scouting pests and diseases.",
+      "Ideal time for weeding and general soil maintenance."
+    ];
+    IconData icon = Icons.spa;
+    Color color = isDark ? AppTheme.lightGreen : AppTheme.primaryGreen;
+
+    if (isRainy) {
+      title = "Rain Excepted";
+      insights = [
+        "Avoid applying fertilizers; they may wash away.",
+        "Ensure drainage channels are clear to prevent waterlogging.",
+        "Good opportunity for transplanting seedlings."
+      ];
+      icon = Icons.water_drop;
+      color = isDark ? Colors.blueAccent : Colors.blue.shade700;
+    } else if (isHot) {
+      title = "High Heat Advisory";
+      insights = [
+        "Water crops early morning or late evening to reduce evaporation.",
+        "Provide shade for young seedlings and livestock.",
+        "Monitor for signs of heat stress in plants."
+      ];
+      icon = Icons.wb_sunny;
+      color = isDark ? Colors.orangeAccent : Colors.orange.shade800;
+    } else if (isCold) {
+      title = "Cold Warning";
+      insights = [
+        "Risk of frost. Cover sensitive crops with mulch or cloth.",
+        "Reduce watering frequency to avoid freezing field water.",
+        "Provide warm bedding for animals."
+      ];
+      icon = Icons.ac_unit;
+      color = isDark ? Colors.cyanAccent : Colors.cyan.shade700;
+    } else if (isWindy) {
+      title = "High Wind Alert";
+      insights = [
+        "Secure tall crops like maize and banana plants.",
+        "Delay spraying pesticides to avoid chemical drift.",
+        "Inspect greenhouses and covers for loose sections."
+      ];
+      icon = Icons.air;
+      color = isDark ? Colors.grey.shade400 : Colors.blueGrey;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: color.withOpacity(isDark ? 0.1 : 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(title,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(color: color, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...insights.map((insight) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6.0),
+                      child: Icon(Icons.circle,
+                          size: 6, color: color.withOpacity(0.7)),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        insight,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              height: 1.4,
+                              // Color is automatic (white in dark mode)
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
     );
   }
 }
