@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "187250556949",
+    "project_id": "farm-wise-7e3d7",
+    "storage_bucket": "farm-wise-7e3d7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:187250556949:android:9d0c1804c11a03d1914e1c",
+        "android_client_info": {
+          "package_name": "com.example.farm_wise"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "187250556949-tla157g0s902kqbtt44ne0t8uqbp3mpj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.farm_wise",
+            "certificate_hash": "4c2cc781aefe425e7603a130af83e9df226c1001"
+          }
+        },
+        {
+          "client_id": "187250556949-ad0ga6jb1o0nvke96kdr02ih5o7ctb68.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlFZRzHYnNr96MqhhnI2axOqUIZ5-awOM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "187250556949-ad0ga6jb1o0nvke96kdr02ih5o7ctb68.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
